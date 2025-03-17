@@ -15,8 +15,8 @@ use bevy_capture::{
         mp4_openh264::Mp4Openh264Encoder,
     },
 };
-use rml_rtmp::time::RtmpTimestamp;
-use tokio::{net::TcpListener, sync::mpsc::UnboundedSender};
+// use rml_rtmp::time::RtmpTimestamp;
+// use tokio::{net::TcpListener, sync::mpsc::UnboundedSender};
 // use rtmp::{
 //     // relay::{pull_client::PullClient, push_client::PushClient},
 //     rtmp::RtmpServer,
@@ -33,60 +33,60 @@ use std::{
 #[derive(Component)]
 struct Shape;
 
-#[derive(Resource, Clone)]
-struct Sender {
-    epoch: Instant,
-    sender: UnboundedSender<StreamManagerMessage>,
-}
+// #[derive(Resource, Clone)]
+// struct Sender {
+//     epoch: Instant,
+//     sender: UnboundedSender<StreamManagerMessage>,
+// }
+//
+// impl Write for Sender {
+//     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+//         if let Err(e) = self.sender.send(StreamManagerMessage::NewVideoData {
+//             timestamp: RtmpTimestamp {
+//                 value: self.epoch.elapsed().as_millis() as u32,
+//             },
+//             data: buf.to_owned().into(),
+//         }) {
+//             println!("{e}");
+//         }
+//
+//         Ok(buf.len())
+//     }
+//
+//     fn flush(&mut self) -> std::io::Result<()> {
+//         Ok(())
+//     }
+// }
+//
+// impl Seek for Sender {
+//     fn seek(&mut self, pos: std::io::SeekFrom) -> std::io::Result<u64> {
+//         // Ok(1920 * 1080 * 4)
+//         Ok(0)
+//     }
+// }
+//
+// impl Encoder for Sender {
+//     fn encode(&mut self, image: &Image) -> bevy_capture::encoder::Result<()> {
+//         // if let Err(e) = self.sender.send(StreamManagerMessage::NewVideoData {
+//         //     timestamp: RtmpTimestamp {
+//         //         value: self.epoch.elapsed().as_millis() as u32,
+//         //     },
+//         //     data: image.data.to_owned().into(),
+//         // }) {
+//         //     println!("{e}");
+//         // }
+//         let image = image.clone().try_into_dynamic()?;
+//         let buffer = image.to_rgba8();
+//
+//         // buffer.to_owned().iter().for_each(|byte| print!("{byte}"));
+//         buffer.save("/tmp/frame.png")?;
+//
+//         Ok(())
+//     }
+// }
 
-impl Write for Sender {
-    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-        if let Err(e) = self.sender.send(StreamManagerMessage::NewVideoData {
-            timestamp: RtmpTimestamp {
-                value: self.epoch.elapsed().as_millis() as u32,
-            },
-            data: buf.to_owned().into(),
-        }) {
-            println!("{e}");
-        }
-
-        Ok(buf.len())
-    }
-
-    fn flush(&mut self) -> std::io::Result<()> {
-        Ok(())
-    }
-}
-
-impl Seek for Sender {
-    fn seek(&mut self, pos: std::io::SeekFrom) -> std::io::Result<u64> {
-        // Ok(1920 * 1080 * 4)
-        Ok(0)
-    }
-}
-
-impl Encoder for Sender {
-    fn encode(&mut self, image: &Image) -> bevy_capture::encoder::Result<()> {
-        // if let Err(e) = self.sender.send(StreamManagerMessage::NewVideoData {
-        //     timestamp: RtmpTimestamp {
-        //         value: self.epoch.elapsed().as_millis() as u32,
-        //     },
-        //     data: image.data.to_owned().into(),
-        // }) {
-        //     println!("{e}");
-        // }
-        let image = image.clone().try_into_dynamic()?;
-        let buffer = image.to_rgba8();
-
-        // buffer.to_owned().iter().for_each(|byte| print!("{byte}"));
-        buffer.save("/tmp/frame.png")?;
-
-        Ok(())
-    }
-}
-
-#[tokio::main]
-async fn main() {
+// #[tokio::main]
+fn main() {
     App::new()
         .add_plugins((
             DefaultPlugins
