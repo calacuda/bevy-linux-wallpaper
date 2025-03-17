@@ -20,7 +20,7 @@ done < $PIDFILE
 killall bg-serv
 
 rm /tmp/frame.gif
-$HOME/Code/rust/game-background/target/debug/bg-serv &
+$HOME/Code/rust/game-background/target/release/bg-serv &
 # PIDs+=($!)
 sleep 0.5
 sleep 5.5
