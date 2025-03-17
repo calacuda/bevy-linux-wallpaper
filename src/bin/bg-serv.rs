@@ -1,17 +1,22 @@
-use std::f32::consts::PI;
-
 use bevy::{
+    a11y::AccessibilityPlugin,
+    audio::AudioPlugin,
     log::{Level, LogPlugin},
     pbr::wireframe::{WireframeConfig, WireframePlugin},
     prelude::*,
-    window::{PresentMode, WindowLevel, WindowMode},
+    winit::{WakeUp, WinitPlugin},
 };
+use game_background::wallpaper_plugin::WallpaperPlugin;
+use std::f32::consts::PI;
 
 /// A marker component for our shapes so we can query them separately from the ground plane
 #[derive(Component)]
 struct Shape;
 
 fn main() {
+    let mut wp_plug = WallpaperPlugin::<WakeUp>::default();
+    wp_plug.run_on_any_thread = true;
+
     App::new()
         .add_plugins((
             DefaultPlugins
@@ -19,17 +24,21 @@ fn main() {
                     level: Level::INFO,
                     ..default()
                 })
-                .set(WindowPlugin {
-                    primary_window: Some(Window {
-                        present_mode: PresentMode::AutoVsync,
-                        name: Some("game-bg".into()),
-                        window_level: WindowLevel::AlwaysOnBottom,
-                        mode: WindowMode::BorderlessFullscreen(MonitorSelection::Current),
-                        ..Default::default()
-                    }),
-                    ..Default::default()
-                }),
+                // .set(WindowPlugin {
+                //     primary_window: Some(Window {
+                //         present_mode: PresentMode::AutoVsync,
+                //         name: Some("game-bg".into()),
+                //         window_level: WindowLevel::AlwaysOnBottom,
+                //         mode: WindowMode::BorderlessFullscreen(MonitorSelection::Current),
+                //         ..Default::default()
+                //     }),
+                //     ..Default::default()
+                // })
+                .disable::<AccessibilityPlugin>()
+                .disable::<AudioPlugin>()
+                .disable::<WinitPlugin>(),
             WireframePlugin,
+            wp_plug,
         ))
         .insert_resource(WireframeConfig {
             // The global wireframe config enables drawing of wireframes on every mesh,
@@ -52,11 +61,20 @@ fn main() {
 }
 
 fn camera_setup(mut commands: Commands) {
+    // commands.insert_resource(ClearColor(
+    //     Srgba {
+    //         red: (30. / 255.),
+    //         green: (30. / 255.),
+    //         blue: (46. / 255.),
+    //         alpha: 1.0,
+    //     }
+    //     .into(),
+    // ));
     commands.insert_resource(ClearColor(
         Srgba {
-            red: (30. / 255.),
-            green: (30. / 255.),
-            blue: (46. / 255.),
+            red: 0.,
+            green: 0.,
+            blue: 0.,
             alpha: 1.0,
         }
         .into(),
