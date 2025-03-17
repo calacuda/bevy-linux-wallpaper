@@ -12,7 +12,10 @@ opt-level = 1
 opt-level = 3
 
 [dependencies]
+anyhow = "1.0.97"
 bevy = "0.15.3"
-bevy-progressbar = { git = "https://github.com/keng9/bevy-progressbar", version = "0.8.0" }
-clap = { version = "4.5.32", features = ["derive"] }
-crossbeam = { version = "0.8.4", features = ["crossbeam-channel", "nightly"] }
+# bevy-progressbar = { git = "https://github.com/keng9/bevy-progressbar", version = "0.8.0" }
+bevy_capture = "0.2.1"
+# clap = { version = "4.5.32", features = ["derive"] }
+# crossbeam = { version = "0.8.4", features = ["crossbeam-channel", "nightly"] }
+x11rb = { version = "0.13.1", features = ["image", "xv"] }
