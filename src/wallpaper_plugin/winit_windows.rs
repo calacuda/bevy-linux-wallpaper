@@ -1,13 +1,15 @@
+use super::{
+    converters::{convert_enabled_buttons, convert_window_level, convert_window_theme},
+    winit_monitors::WinitMonitors,
+};
 use bevy::utils::HashMap;
 use bevy_ecs::entity::Entity;
 use bevy_ecs::entity::EntityHashMap;
-use core::panic;
-// use bevy::prelude::entity::hash_map::EntityHashMap;
-// use bevy_platform_support::collections::HashMap;
 use bevy_window::{
     CursorGrabMode, MonitorSelection, Window, WindowMode, WindowPosition, WindowResolution,
     WindowWrapper,
 };
+use core::panic;
 use tracing::{error, info, warn};
 use winit::platform::x11::WindowAttributesExtX11;
 use winit::{
@@ -16,11 +18,6 @@ use winit::{
     event_loop::ActiveEventLoop,
     monitor::MonitorHandle,
     window::{CursorGrabMode as WinitCursorGrabMode, Fullscreen, Window as WinitWindow, WindowId},
-};
-
-use super::{
-    converters::{convert_enabled_buttons, convert_window_level, convert_window_theme},
-    winit_monitors::WinitMonitors,
 };
 
 /// A resource mapping window entities to their `winit`-backend [`Window`](winit::window::Window)
@@ -50,8 +47,9 @@ impl WinitWindows {
         // handlers: &mut WinitActionRequestHandlers,
         // accessibility_requested: &AccessibilityRequested,
         monitors: &WinitMonitors,
+        parent_window_id: u32,
     ) -> &WindowWrapper<WinitWindow> {
-        println!("create_window");
+        // println!("create_window");
         let mut winit_window_attributes = WinitWindow::default_attributes();
 
         // Due to a UIA limitation, winit windows need to be invisible for the
@@ -173,9 +171,11 @@ impl WinitWindows {
             }
         }
 
-        let parent_window_id = 0x1e8;
-        println!("attempting to parent to window {}", parent_window_id);
-
+        // let parent_window_id = 0x1e8;
+        // let parent_window_ids = get_screen_roots();
+        // println!("attempting to parent to window {:?}", parent_window_ids);
+        //
+        // for parent_window_id in parent_window_ids {
         winit_window_attributes = winit_window_attributes
             .with_embed_parent_window(parent_window_id)
             .with_override_redirect(true)
@@ -210,11 +210,11 @@ impl WinitWindows {
         let mut winit_window_attributes = winit_window_attributes.with_title(window.title.as_str());
 
         // let winit_window = event_loop.create_window(winit_window_attributes).unwrap();
-        println!("winit_window_atters => {:?}", winit_window_attributes);
+        // println!("winit_window_atters => {:?}", winit_window_attributes);
         let winit_window_res = event_loop.create_window(winit_window_attributes);
-        println!("winit_window_res => {:?}", winit_window_res);
+        // println!("winit_window_res => {:?}", winit_window_res);
         let winit_window = winit_window_res.unwrap();
-        let name = window.title.clone();
+        let _name = window.title.clone();
 
         // Now that the AccessKit adapter is created, it's safe to show
         // the window.

@@ -32,3 +32,4 @@ clap = { version = "4.5.32", features = ["derive"] }
 crossbeam = { version = "0.8.4", features = ["crossbeam-channel", "nightly"] }
 tracing = "0.1.41"
 winit = "0.30.9"
+x11rb = "0.13.1"

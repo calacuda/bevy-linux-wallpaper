@@ -2228,6 +2228,7 @@ dependencies = [
  "crossbeam",
  "tracing",
  "winit",
+ "x11rb",
 ]
 
 [[package]]

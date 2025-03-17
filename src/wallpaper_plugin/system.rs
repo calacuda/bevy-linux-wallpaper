@@ -17,6 +17,8 @@ use winit::{
     event_loop::ActiveEventLoop,
 };
 
+use crate::get_screen_roots;
+
 use super::{
     CreateMonitorParams, CreateWindowParams, WinitWindows,
     converters::{
@@ -51,43 +53,52 @@ pub fn create_windows<F: QueryFilter + 'static>(
     ): SystemParamItem<CreateWindowParams<F>>,
 ) {
     for (entity, mut window, handle_holder) in &mut created_windows {
-        if winit_windows.get_window(entity).is_some() {
-            continue;
-        }
+        let parent_window_ids = get_screen_roots();
 
-        info!("Creating new window {} ({})", window.title.as_str(), entity);
+        for parent_window_id in parent_window_ids {
+            // println!("attempting to parent to windows {:?}", parent_window_ids);
 
-        let winit_window = winit_windows.create_window(
-            event_loop, entity, &window,
-            // &mut adapters,
-            // &mut handlers,
-            // &accessibility_requested,
-            &monitors,
-        );
-
-        if let Some(theme) = winit_window.theme() {
-            window.window_theme = Some(convert_winit_theme(theme));
-        }
-
-        window
-            .resolution
-            .set_scale_factor_and_apply_to_physical_size(winit_window.scale_factor() as f32);
-
-        commands.entity(entity).insert((
-            CachedWindow {
-                window: window.clone(),
-            },
-            // WinitWindowPressedKeys::default(),
-        ));
-
-        if let Ok(handle_wrapper) = RawHandleWrapper::new(winit_window) {
-            commands.entity(entity).insert(handle_wrapper.clone());
-            if let Some(handle_holder) = handle_holder {
-                *handle_holder.0.lock().unwrap() = Some(handle_wrapper);
+            if winit_windows.get_window(entity).is_some() {
+                continue;
             }
-        }
 
-        window_created_events.send(WindowCreated { window: entity });
+            info!("Creating new window {} ({})", window.title.as_str(), entity);
+
+            let winit_window = winit_windows.create_window(
+                event_loop,
+                entity,
+                &window,
+                // &mut adapters,
+                // &mut handlers,
+                // &accessibility_requested,
+                &monitors,
+                parent_window_id,
+            );
+
+            if let Some(theme) = winit_window.theme() {
+                window.window_theme = Some(convert_winit_theme(theme));
+            }
+
+            window
+                .resolution
+                .set_scale_factor_and_apply_to_physical_size(winit_window.scale_factor() as f32);
+
+            commands.entity(entity).insert((
+                CachedWindow {
+                    window: window.clone(),
+                },
+                // WinitWindowPressedKeys::default(),
+            ));
+
+            if let Ok(handle_wrapper) = RawHandleWrapper::new(winit_window) {
+                commands.entity(entity).insert(handle_wrapper.clone());
+                if let Some(handle_holder) = handle_holder {
+                    *handle_holder.0.lock().unwrap() = Some(handle_wrapper);
+                }
+            }
+
+            window_created_events.send(WindowCreated { window: entity });
+        }
     }
 }
 
