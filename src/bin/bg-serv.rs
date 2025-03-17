@@ -6,7 +6,7 @@ use bevy::{
     prelude::*,
     winit::{WakeUp, WinitPlugin},
 };
-use bevy_window::{PresentMode, WindowMode, WindowResized, WindowResolution};
+use bevy_window::{PresentMode, WindowLevel, WindowMode, WindowResized, WindowResolution};
 use game_background::wallpaper_plugin::WallpaperPlugin;
 use std::f32::consts::PI;
 
@@ -27,14 +27,14 @@ fn main() {
                 })
                 .set(WindowPlugin {
                     primary_window: Some(Window {
-                        present_mode: PresentMode::AutoVsync,
+                        present_mode: PresentMode::Immediate,
                         name: Some("game-bg".into()),
-                        // window_level: WindowLevel::AlwaysOnBottom,
+                        window_level: WindowLevel::AlwaysOnTop,
                         mode: WindowMode::Windowed,
                         // resizable: true,
                         // fullsize_content_view: true,
                         resolution: WindowResolution::new(1920., 1080.),
-                        position: WindowPosition::At((1680, 0).into()),
+                        // position: WindowPosition::At((1680, 0).into()),
                         ..Default::default()
                     }),
                     ..Default::default()

@@ -507,19 +507,6 @@ impl<T: Event> WinitAppRunnerState<T> {
             // Trigger one last update to enter the suspended state
             should_update = true;
             self.ran_update_since_last_redraw = false;
-
-            #[cfg(target_os = "android")]
-            {
-                // Remove the `RawHandleWrapper` from the primary window.
-                // This will trigger the surface destruction.
-                let mut query = self
-                    .world_mut()
-                    .query_filtered::<Entity, With<PrimaryWindow>>();
-                let entity = query.single(&self.world()).unwrap();
-                self.world_mut()
-                    .entity_mut(entity)
-                    .remove::<RawHandleWrapper>();
-            }
         }
 
         if self.lifecycle == AppLifecycle::WillResume {
@@ -528,43 +515,6 @@ impl<T: Event> WinitAppRunnerState<T> {
             should_update = true;
             // Trigger the next redraw to refresh the screen immediately
             self.redraw_requested = true;
-
-            #[cfg(target_os = "android")]
-            {
-                // Get windows that are cached but without raw handles. Those window were already created, but got their
-                // handle wrapper removed when the app was suspended.
-                let mut query = self.world_mut()
-                    .query_filtered::<(Entity, &Window), (With<CachedWindow>, Without<bevy_window::RawHandleWrapper>)>();
-                if let Ok((entity, window)) = query.single(&self.world()) {
-                    let window = window.clone();
-
-                    let mut create_window =
-                        SystemState::<CreateWindowParams>::from_world(self.world_mut());
-
-                    let (
-                        ..,
-                        mut winit_windows,
-                        mut adapters,
-                        mut handlers,
-                        accessibility_requested,
-                        monitors,
-                    ) = create_window.get_mut(self.world_mut());
-
-                    let winit_window = winit_windows.create_window(
-                        event_loop,
-                        entity,
-                        &window,
-                        &mut adapters,
-                        &mut handlers,
-                        &accessibility_requested,
-                        &monitors,
-                    );
-
-                    let wrapper = RawHandleWrapper::new(winit_window).unwrap();
-
-                    self.world_mut().entity_mut(entity).insert(wrapper);
-                }
-            }
         }
 
         // Notifies a lifecycle change

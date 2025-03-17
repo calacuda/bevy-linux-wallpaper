@@ -1,3 +1,5 @@
+use std::num::NonZeroU32;
+
 use super::{
     converters::{convert_enabled_buttons, convert_window_level, convert_window_theme},
     winit_monitors::WinitMonitors,
@@ -10,13 +12,17 @@ use bevy_window::{
     WindowWrapper,
 };
 use tracing::{error, info, warn};
-use winit::platform::x11::WindowAttributesExtX11;
 use winit::{
     dpi::{LogicalSize, PhysicalPosition},
     error::ExternalError,
     event_loop::ActiveEventLoop,
     monitor::MonitorHandle,
+    raw_window_handle::{RawWindowHandle, XcbWindowHandle},
     window::{CursorGrabMode as WinitCursorGrabMode, Fullscreen, Window as WinitWindow, WindowId},
+};
+use winit::{
+    platform::x11::{WindowAttributesExtX11, WindowType},
+    window::WindowButtons,
 };
 
 /// A resource mapping window entities to their `winit`-backend [`Window`](winit::window::Window)
@@ -53,7 +59,7 @@ impl WinitWindows {
 
         // Due to a UIA limitation, winit windows need to be invisible for the
         // AccessKit adapter is initialized.
-        winit_window_attributes = winit_window_attributes.with_visible(false);
+        // winit_window_attributes = winit_window_attributes.with_visible(false);
 
         let maybe_selected_monitor = &match window.mode {
             WindowMode::BorderlessFullscreen(monitor_selection)
@@ -189,9 +195,18 @@ impl WinitWindows {
         winit_window_attributes = winit_window_attributes
             .with_embed_parent_window(parent_window_id)
             .with_override_redirect(true)
-            // .with_fullscreen(Some(Fullscreen::Borderless(None)))
-            // .with_maximized(true);
-            ;
+            .with_fullscreen(Some(Fullscreen::Borderless(None)))
+            .with_maximized(true)
+            .with_decorations(false)
+            .with_enabled_buttons(WindowButtons::empty())
+            // .with_x11_visual(0x1);
+            .with_x11_window_type(Vec::from([WindowType::Notification]));
+
+        // winit_window_attributes = unsafe {
+        //     winit_window_attributes.with_parent_window(Some(RawWindowHandle::Xcb(
+        //         XcbWindowHandle::new(NonZeroU32::new(parent_window_id).unwrap()),
+        //     )))
+        // };
 
         let constraints = window.resize_constraints.check_constraints();
         let min_inner_size = LogicalSize {
@@ -230,6 +245,8 @@ impl WinitWindows {
         // the window.
         winit_window.set_visible(window.visible);
 
+        // winit_window.
+
         // Do not set the grab mode on window creation if it's none. It can fail on mobile.
         if window.cursor_options.grab_mode != CursorGrabMode::None {
             let _ = attempt_grab(&winit_window, window.cursor_options.grab_mode);
@@ -248,11 +265,17 @@ impl WinitWindows {
             }
         }
 
+        let pwi: WindowId = (parent_window_id as u64).into();
+        info!("pwi => {pwi:?}");
+
         self.entity_to_winit.insert(entity, winit_window.id());
         self.winit_to_entity.insert(winit_window.id(), entity);
+        // self.entity_to_winit.insert(entity, pwi);
+        // self.winit_to_entity.insert(pwi, entity);
 
         self.windows
             .entry(winit_window.id())
+            // .entry(pwi)
             .insert(WindowWrapper::new(winit_window))
             .into_mut()
     }
