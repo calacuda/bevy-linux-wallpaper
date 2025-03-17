@@ -9,7 +9,6 @@ use bevy_window::{
     CursorGrabMode, MonitorSelection, Window, WindowMode, WindowPosition, WindowResolution,
     WindowWrapper,
 };
-use core::panic;
 use tracing::{error, info, warn};
 use winit::platform::x11::WindowAttributesExtX11;
 use winit::{
@@ -71,9 +70,11 @@ impl WinitWindows {
             }
         };
 
-        winit_window_attributes = match window.mode {
-            WindowMode::BorderlessFullscreen(_) => winit_window_attributes
-                .with_fullscreen(Some(Fullscreen::Borderless(maybe_selected_monitor.clone()))),
+        match window.mode {
+            WindowMode::BorderlessFullscreen(_) => {
+                winit_window_attributes = winit_window_attributes
+                    .with_fullscreen(Some(Fullscreen::Borderless(maybe_selected_monitor.clone())));
+            }
             // WindowMode::Fullscreen(monitor_selection, video_mode_selection) => {
             //     let select_monitor = &maybe_selected_monitor
             //         .clone()
@@ -102,17 +103,26 @@ impl WinitWindows {
                     winit_window_attributes = winit_window_attributes.with_position(position);
                 }
                 let logical_size = LogicalSize::new(window.width(), window.height());
-                if let Some(sf) = window.resolution.scale_factor_override() {
-                    let inner_size = logical_size.to_physical::<f64>(sf.into());
-                    winit_window_attributes.with_inner_size(inner_size)
-                } else {
-                    winit_window_attributes.with_inner_size(logical_size)
-                }
+
+                winit_window_attributes =
+                    if let Some(sf) = window.resolution.scale_factor_override() {
+                        let inner_size = logical_size.to_physical::<f64>(sf.into());
+                        winit_window_attributes.with_inner_size(inner_size)
+                    } else {
+                        winit_window_attributes.with_inner_size(logical_size)
+                    };
             }
             _ => {
-                panic!("selected as disabled window mode");
+                // panic!("selected as disabled window mode");
+                error!("selected as disabled window mode");
             }
         };
+
+        info!(
+            "making window with geometry: {} x {}",
+            window.resolution.physical_width(),
+            window.resolution.physical_height()
+        );
 
         // It's crucial to avoid setting the window's final visibility here;
         // as explained above, the window must be invisible until the AccessKit

@@ -6,6 +6,7 @@ use bevy::{
     prelude::*,
     winit::{WakeUp, WinitPlugin},
 };
+use bevy_window::{PresentMode, WindowMode, WindowResized, WindowResolution};
 use game_background::wallpaper_plugin::WallpaperPlugin;
 use std::f32::consts::PI;
 
@@ -24,16 +25,20 @@ fn main() {
                     level: Level::INFO,
                     ..default()
                 })
-                // .set(WindowPlugin {
-                //     primary_window: Some(Window {
-                //         present_mode: PresentMode::AutoVsync,
-                //         name: Some("game-bg".into()),
-                //         window_level: WindowLevel::AlwaysOnBottom,
-                //         mode: WindowMode::BorderlessFullscreen(MonitorSelection::Current),
-                //         ..Default::default()
-                //     }),
-                //     ..Default::default()
-                // })
+                .set(WindowPlugin {
+                    primary_window: Some(Window {
+                        present_mode: PresentMode::AutoVsync,
+                        name: Some("game-bg".into()),
+                        // window_level: WindowLevel::AlwaysOnBottom,
+                        mode: WindowMode::Windowed,
+                        // resizable: true,
+                        // fullsize_content_view: true,
+                        resolution: WindowResolution::new(1920., 1080.),
+                        position: WindowPosition::At((1680, 0).into()),
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                })
                 .disable::<AccessibilityPlugin>()
                 .disable::<AudioPlugin>()
                 .disable::<WinitPlugin>(),
@@ -56,7 +61,7 @@ fn main() {
             .into(),
         })
         .add_systems(Startup, (camera_setup, spawn_cube))
-        .add_systems(Update, rotate)
+        .add_systems(Update, (rotate, log_window_resize))
         .run();
 }
 
@@ -119,5 +124,12 @@ fn spawn_cube(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
 fn rotate(mut query: Query<&mut Transform, With<Shape>>, time: Res<Time>) {
     for mut transform in &mut query {
         transform.rotate_y(time.delta_secs());
+    }
+}
+
+fn log_window_resize(mut resize_reader: EventReader<WindowResized>) {
+    for e in resize_reader.read() {
+        // When resolution is being changed
+        info!("{:.1} x {:.1}", e.width, e.height);
     }
 }
