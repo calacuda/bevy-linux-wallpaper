@@ -19,12 +19,12 @@ fn main() {
     App::new()
         .add_plugins((
             DefaultPlugins
-                // .set(ImagePlugin::default_nearest())
                 .set(LogPlugin {
                     level: Level::INFO,
                     ..default()
                 })
-                .disable::<WinitPlugin>(), // .set(RenderPlugin {
+                .disable::<WinitPlugin>(),
+            // .set(RenderPlugin {
             //     synchronous_pipeline_compilation: true,
             //     ..default()
             // })
@@ -89,13 +89,10 @@ fn spawn_cube(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
     let cube = meshes.add(Cuboid::default());
 
     let rot_1 = Quat::from_rotation_x(45.0 * (-PI / 180.0));
-    // rot.y = -PI * 2.;
-    // rot.z = -PI * 2.0;
     let rot_2 = Quat::from_rotation_y(36.25 * (-PI / 180.0));
 
     commands.spawn((
         Mesh3d(cube),
-        // MeshMaterial3d(debug_material.clone()),
         Transform::from_xyz(0.0, 0.0, 0.0).with_rotation(rot_1 * rot_2),
         Shape,
     ));
