@@ -1,105 +1,33 @@
-// use anyhow::Result;
 use bevy::{
     app::{RunMode, ScheduleRunnerPlugin},
     log::{Level, LogPlugin},
     pbr::wireframe::{WireframeConfig, WireframePlugin},
     prelude::*,
-    render::RenderPlugin,
-    // window::{PresentMode, WindowLevel, WindowMode},
     winit::WinitPlugin,
 };
 use bevy_capture::{
-    CameraTargetHeadless, Capture, CaptureBundle, Encoder,
-    encoder::{
-        gif::{self, GifEncoder},
-        mp4_openh264::Mp4Openh264Encoder,
-    },
+    CameraTargetHeadless, Capture, CaptureBundle,
+    encoder::gif::{self, GifEncoder},
 };
-// use rml_rtmp::time::RtmpTimestamp;
-// use tokio::{net::TcpListener, sync::mpsc::UnboundedSender};
-// use rtmp::{
-//     // relay::{pull_client::PullClient, push_client::PushClient},
-//     rtmp::RtmpServer,
-// };
-use std::{
-    f32::consts::PI,
-    fs::File,
-    io::{Read, Seek, Stdout, Write},
-    time::Instant,
-};
-// use streamhub::{StreamsHub, define::StreamHubEventSender};
+use std::{f32::consts::PI, fs::File};
 
 /// A marker component for our shapes so we can query them separately from the ground plane
 #[derive(Component)]
 struct Shape;
 
-// #[derive(Resource, Clone)]
-// struct Sender {
-//     epoch: Instant,
-//     sender: UnboundedSender<StreamManagerMessage>,
-// }
-//
-// impl Write for Sender {
-//     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-//         if let Err(e) = self.sender.send(StreamManagerMessage::NewVideoData {
-//             timestamp: RtmpTimestamp {
-//                 value: self.epoch.elapsed().as_millis() as u32,
-//             },
-//             data: buf.to_owned().into(),
-//         }) {
-//             println!("{e}");
-//         }
-//
-//         Ok(buf.len())
-//     }
-//
-//     fn flush(&mut self) -> std::io::Result<()> {
-//         Ok(())
-//     }
-// }
-//
-// impl Seek for Sender {
-//     fn seek(&mut self, pos: std::io::SeekFrom) -> std::io::Result<u64> {
-//         // Ok(1920 * 1080 * 4)
-//         Ok(0)
-//     }
-// }
-//
-// impl Encoder for Sender {
-//     fn encode(&mut self, image: &Image) -> bevy_capture::encoder::Result<()> {
-//         // if let Err(e) = self.sender.send(StreamManagerMessage::NewVideoData {
-//         //     timestamp: RtmpTimestamp {
-//         //         value: self.epoch.elapsed().as_millis() as u32,
-//         //     },
-//         //     data: image.data.to_owned().into(),
-//         // }) {
-//         //     println!("{e}");
-//         // }
-//         let image = image.clone().try_into_dynamic()?;
-//         let buffer = image.to_rgba8();
-//
-//         // buffer.to_owned().iter().for_each(|byte| print!("{byte}"));
-//         buffer.save("/tmp/frame.png")?;
-//
-//         Ok(())
-//     }
-// }
-
-// #[tokio::main]
 fn main() {
     App::new()
         .add_plugins((
             DefaultPlugins
-                .set(ImagePlugin::default_nearest())
+                // .set(ImagePlugin::default_nearest())
                 .set(LogPlugin {
                     level: Level::INFO,
                     ..default()
                 })
-                .disable::<WinitPlugin>()
-                .set(RenderPlugin {
-                    synchronous_pipeline_compilation: true,
-                    ..default()
-                }),
+                .disable::<WinitPlugin>(), // .set(RenderPlugin {
+            //     synchronous_pipeline_compilation: true,
+            //     ..default()
+            // })
             WireframePlugin,
             // Add the ScheduleRunnerPlugin to run the app in loop mode
             ScheduleRunnerPlugin {
@@ -122,7 +50,6 @@ fn main() {
             }
             .into(),
         })
-        // .insert_resource(sender)
         .add_systems(Startup, (camera_setup, spawn_cube))
         .add_systems(Update, (rotate, update))
         .run();
@@ -181,16 +108,12 @@ fn rotate(mut query: Query<&mut Transform, With<Shape>>, time: Res<Time>) {
 }
 
 // Start capturing
-fn update(mut capture: Query<&mut Capture> /* , sender: ResMut<Sender> */) {
+fn update(mut capture: Query<&mut Capture>) {
     let mut capture = capture.single_mut();
     if !capture.is_capturing() {
         capture.start(
             GifEncoder::new(File::create("/tmp/frame.gif").unwrap())
                 .with_repeat(gif::Repeat::Infinite),
-            // Mp4Openh264Encoder::new(sender.clone(), 1920, 1080).unwrap(),
-            // Mp4Openh264Encoder::new(File::create("/tmp/tmp-bevy.mp4").unwrap(), 1920, 1080)
-            //     .unwrap(),
-            // sender.clone(),
         );
         info!("started");
     }

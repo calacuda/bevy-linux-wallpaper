@@ -10,6 +10,7 @@ _screen() {
         --no-stop-screensaver \
         --hwdec=vdpau \
         --loop-file --no-audio --no-osc --no-osd-bar -wid WID --no-input-default-bindings \
+        --fs-screen-name="mpv" \
         /tmp/frame.gif &
     PIDs+=($!)
 }
@@ -20,7 +21,7 @@ done < $PIDFILE
 killall bg-serv
 
 rm /tmp/frame.gif
-$HOME/Code/rust/game-background/target/release/bg-serv &
+$HOME/Code/rust/game-background/target/debug/bg-serv &
 # PIDs+=($!)
 sleep 0.5
 sleep 5.5
