@@ -1,17 +1,23 @@
-use std::f32::consts::PI;
-
 use bevy::{
+    a11y::AccessibilityPlugin,
+    audio::AudioPlugin,
     log::{Level, LogPlugin},
     pbr::wireframe::{WireframeConfig, WireframePlugin},
     prelude::*,
-    window::{PresentMode, WindowLevel, WindowMode},
+    winit::{WakeUp, WinitPlugin},
 };
+use bevy_window::{PresentMode, WindowLevel, WindowMode, WindowResized, WindowResolution};
+use game_background::wallpaper_plugin::WallpaperPlugin;
+use std::f32::consts::PI;
 
 /// A marker component for our shapes so we can query them separately from the ground plane
 #[derive(Component)]
 struct Shape;
 
 fn main() {
+    let mut wp_plug = WallpaperPlugin::<WakeUp>::default();
+    wp_plug.run_on_any_thread = true;
+
     App::new()
         .add_plugins((
             DefaultPlugins
@@ -21,15 +27,23 @@ fn main() {
                 })
                 .set(WindowPlugin {
                     primary_window: Some(Window {
-                        present_mode: PresentMode::AutoVsync,
+                        present_mode: PresentMode::Immediate,
                         name: Some("game-bg".into()),
-                        window_level: WindowLevel::AlwaysOnBottom,
-                        mode: WindowMode::BorderlessFullscreen(MonitorSelection::Current),
+                        window_level: WindowLevel::AlwaysOnTop,
+                        mode: WindowMode::Windowed,
+                        // resizable: true,
+                        // fullsize_content_view: true,
+                        resolution: WindowResolution::new(1920., 1080.),
+                        // position: WindowPosition::At((1680, 0).into()),
                         ..Default::default()
                     }),
                     ..Default::default()
-                }),
+                })
+                .disable::<AccessibilityPlugin>()
+                .disable::<AudioPlugin>()
+                .disable::<WinitPlugin>(),
             WireframePlugin,
+            wp_plug,
         ))
         .insert_resource(WireframeConfig {
             // The global wireframe config enables drawing of wireframes on every mesh,
@@ -47,16 +61,25 @@ fn main() {
             .into(),
         })
         .add_systems(Startup, (camera_setup, spawn_cube))
-        .add_systems(Update, rotate)
+        .add_systems(Update, (rotate, log_window_resize))
         .run();
 }
 
 fn camera_setup(mut commands: Commands) {
+    // commands.insert_resource(ClearColor(
+    //     Srgba {
+    //         red: (30. / 255.),
+    //         green: (30. / 255.),
+    //         blue: (46. / 255.),
+    //         alpha: 1.0,
+    //     }
+    //     .into(),
+    // ));
     commands.insert_resource(ClearColor(
         Srgba {
-            red: (30. / 255.),
-            green: (30. / 255.),
-            blue: (46. / 255.),
+            red: 0.,
+            green: 0.,
+            blue: 0.,
             alpha: 1.0,
         }
         .into(),
@@ -101,5 +124,12 @@ fn spawn_cube(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
 fn rotate(mut query: Query<&mut Transform, With<Shape>>, time: Res<Time>) {
     for mut transform in &mut query {
         transform.rotate_y(time.delta_secs());
+    }
+}
+
+fn log_window_resize(mut resize_reader: EventReader<WindowResized>) {
+    for e in resize_reader.read() {
+        // When resolution is being changed
+        info!("{:.1} x {:.1}", e.width, e.height);
     }
 }
