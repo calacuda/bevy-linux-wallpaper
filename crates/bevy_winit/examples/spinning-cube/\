@@ -4,9 +4,10 @@ use bevy::{
     log::{Level, LogPlugin},
     pbr::wireframe::{WireframeConfig, WireframePlugin},
     prelude::*,
+    window::{PresentMode, WindowLevel, WindowMode, WindowResized, WindowResolution},
     winit::{WakeUp, WinitPlugin},
 };
-use bevy_window::{PresentMode, WindowLevel, WindowMode, WindowResized, WindowResolution};
+// use bevy_window::{PresentMode, WindowLevel, WindowMode, WindowResized, WindowResolution};
 use game_background::wallpaper_plugin::WallpaperPlugin;
 use std::f32::consts::PI;
 

@@ -1,3 +1,4 @@
+use crate::get_screen_roots;
 use bevy_ecs::{
     entity::Entity,
     event::EventWriter,
@@ -10,14 +11,12 @@ use bevy_window::{
     ClosingWindow, Monitor, PrimaryMonitor, RawHandleWrapper, VideoMode, Window, WindowClosed,
     WindowClosing, WindowCreated, WindowMode, WindowResized, WindowWrapper,
 };
-use tracing::{error, info, warn};
-
+use tracing::{debug, error, info, warn};
 use winit::{
     dpi::{LogicalPosition, LogicalSize, PhysicalPosition, PhysicalSize},
     event_loop::ActiveEventLoop,
+    raw_window_handle::{HasDisplayHandle, RawWindowHandle, XcbWindowHandle},
 };
-
-use crate::get_screen_roots;
 
 use super::{
     CreateMonitorParams, CreateWindowParams, WinitWindows,
@@ -56,10 +55,10 @@ pub fn create_windows<F: QueryFilter + 'static>(
         let parent_window_ids = get_screen_roots();
 
         for parent_window_id in parent_window_ids {
-            // println!("attempting to parent to windows {:?}", parent_window_ids);
-
             if winit_windows.get_window(entity).is_some() {
                 continue;
+            } else {
+                warn!("attempting to parent to windows {:?}", parent_window_id);
             }
 
             info!("Creating new window {} ({})", window.title.as_str(), entity);
@@ -75,13 +74,26 @@ pub fn create_windows<F: QueryFilter + 'static>(
                 parent_window_id,
             );
 
-            if let Some(theme) = winit_window.theme() {
-                window.window_theme = Some(convert_winit_theme(theme));
-            }
+            // if let Some(theme) = winit_window.theme() {
+            //     window.window_theme = Some(convert_winit_theme(theme));
+            // }
 
-            window
-                .resolution
-                .set_scale_factor_and_apply_to_physical_size(winit_window.scale_factor() as f32);
+            // window
+            //     .resolution
+            //     .set_scale_factor_and_apply_to_physical_size(winit_window.scale_factor() as f32);
+            // let winit_window = WindowWrapper::new(RawWindowHandle::Xcb(XcbWindowHandle::new(
+            //     NonZeroU32::new(parent_window_id).unwrap(),
+            // )));
+            // let handle_wrapper = WindowWrapper::new(RawWindowHandle::Xcb(XcbWindowHandle::new(
+            //     NonZeroU32::new(parent_window_id).unwrap(),
+            // )));
+            // let winit_window = RawWindowHandle::Xcb(XcbWindowHandle::new(
+            //     NonZeroU32::new(parent_window_id).unwrap(),
+            // ));
+            // let winit_window = WindowWrapper::new(WindowFromX11 {
+            //     rwh: winit_window,
+            //     ev_loop: event_loop.display_handle().unwrap(),
+            // });
 
             commands.entity(entity).insert((
                 CachedWindow {
@@ -89,12 +101,16 @@ pub fn create_windows<F: QueryFilter + 'static>(
                 },
                 // WinitWindowPressedKeys::default(),
             ));
+            debug!("wid: {:?}", winit_window.id());
+            // error!("window: {:?}", window);
 
-            if let Ok(handle_wrapper) = RawHandleWrapper::new(winit_window) {
+            // if let Ok(handle_wrapper) = RawHandleWrapper::new(winit_window) {
+            if let Ok(handle_wrapper) = RawHandleWrapper::new(&winit_window) {
                 commands.entity(entity).insert(handle_wrapper.clone());
-                warn!("handle_holder => {:?}", handle_holder);
+                warn!("handle_wrapper => {:?}", handle_wrapper);
 
                 if let Some(handle_holder) = handle_holder {
+                    warn!("handle_holder => {:?}", handle_holder);
                     *handle_holder.0.lock().unwrap() = Some(handle_wrapper);
                 }
             }

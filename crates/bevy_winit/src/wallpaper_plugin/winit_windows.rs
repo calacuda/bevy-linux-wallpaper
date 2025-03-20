@@ -17,13 +17,19 @@ use winit::{
     error::ExternalError,
     event_loop::ActiveEventLoop,
     monitor::MonitorHandle,
-    raw_window_handle::{RawWindowHandle, XcbWindowHandle},
+    raw_window_handle::{DisplayHandle, RawWindowHandle, XcbWindowHandle},
     window::{CursorGrabMode as WinitCursorGrabMode, Fullscreen, Window as WinitWindow, WindowId},
 };
 use winit::{
     platform::x11::{WindowAttributesExtX11, WindowType},
     window::WindowButtons,
 };
+
+// #[derive(Debug)]
+// pub struct WindowFromX11<'a> {
+//     pub rwh: RawWindowHandle,
+//     pub ev_loop: DisplayHandle<'a>,
+// }
 
 /// A resource mapping window entities to their `winit`-backend [`Window`](winit::window::Window)
 /// states.
@@ -56,6 +62,7 @@ impl WinitWindows {
     ) -> &WindowWrapper<WinitWindow> {
         // println!("create_window");
         let mut winit_window_attributes = WinitWindow::default_attributes();
+        // winit_window_attributes.;
 
         // Due to a UIA limitation, winit windows need to be invisible for the
         // AccessKit adapter is initialized.
@@ -202,11 +209,11 @@ impl WinitWindows {
             // .with_x11_visual(0x1);
             .with_x11_window_type(Vec::from([WindowType::Notification]));
 
-        // winit_window_attributes = unsafe {
-        //     winit_window_attributes.with_parent_window(Some(RawWindowHandle::Xcb(
-        //         XcbWindowHandle::new(NonZeroU32::new(parent_window_id).unwrap()),
-        //     )))
-        // };
+        winit_window_attributes = unsafe {
+            winit_window_attributes.with_parent_window(Some(RawWindowHandle::Xcb(
+                XcbWindowHandle::new(NonZeroU32::new(parent_window_id).unwrap()),
+            )))
+        };
 
         let constraints = window.resize_constraints.check_constraints();
         let min_inner_size = LogicalSize {
@@ -248,25 +255,26 @@ impl WinitWindows {
         // winit_window.
 
         // Do not set the grab mode on window creation if it's none. It can fail on mobile.
-        if window.cursor_options.grab_mode != CursorGrabMode::None {
-            let _ = attempt_grab(&winit_window, window.cursor_options.grab_mode);
-        }
+        // if window.cursor_options.grab_mode != CursorGrabMode::None {
+        //     let _ = attempt_grab(&winit_window, window.cursor_options.grab_mode);
+        // }
 
-        winit_window.set_cursor_visible(window.cursor_options.visible);
+        // winit_window.set_cursor_visible(window.cursor_options.visible);
 
         // Do not set the cursor hittest on window creation if it's false, as it will always fail on
         // some platforms and log an unfixable warning.
-        if !window.cursor_options.hit_test {
-            if let Err(err) = winit_window.set_cursor_hittest(window.cursor_options.hit_test) {
-                warn!(
-                    "Could not set cursor hit test for window {}: {}",
-                    window.title, err
-                );
-            }
-        }
+        // if !window.cursor_options.hit_test {
+        //     if let Err(err) = winit_window.set_cursor_hittest(window.cursor_options.hit_test) {
+        //         warn!(
+        //             "Could not set cursor hit test for window {}: {}",
+        //             window.title, err
+        //         );
+        //     }
+        // }
 
         let pwi: WindowId = (parent_window_id as u64).into();
         info!("pwi => {pwi:?}");
+        // let window = RawWindowHandle::Xcb(XcbWindowHandle::new(NonZeroU32::new(parent_window_id).unwrap()));
 
         self.entity_to_winit.insert(entity, winit_window.id());
         self.winit_to_entity.insert(winit_window.id(), entity);
@@ -277,6 +285,9 @@ impl WinitWindows {
             .entry(winit_window.id())
             // .entry(pwi)
             .insert(WindowWrapper::new(winit_window))
+            // .insert(WindowWrapper::new(
+            //     winit::window::Window::new(event_loop, winit_window_attributes).unwrap(),
+            // ))
             .into_mut()
     }
 

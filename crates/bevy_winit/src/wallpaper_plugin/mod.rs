@@ -1,4 +1,4 @@
-use bevy::{prelude::*, winit::WakeUp};
+use bevy::prelude::*;
 use bevy_window::{RawHandleWrapperHolder, Window, WindowCreated, WindowEvent, exit_on_all_closed};
 use core::marker::PhantomData;
 use state::winit_runner;
@@ -84,11 +84,11 @@ impl<T: Event> Plugin for WallpaperPlugin<T> {
     }
 }
 
-// /// The default event that can be used to wake the window loop
-// /// Wakes up the loop if in wait state
-// #[derive(Debug, Default, Clone, Copy, Event, Reflect)]
-// #[reflect(Debug, Default)]
-// pub struct WakeUp;
+/// The default event that can be used to wake the window loop
+/// Wakes up the loop if in wait state
+#[derive(Debug, Default, Clone, Copy, Event, Reflect)]
+#[reflect(Debug, Default)]
+pub struct WakeUp;
 
 /// The original window event as produced by Winit. This is meant as an escape
 /// hatch for power users that wish to add custom Winit integrations.
