@@ -11,7 +11,7 @@ use bevy::{
     winit::{WakeUp, WinitPlugin},
 };
 // use bevy_window::{PresentMode, WindowLevel, WindowMode, WindowResized, WindowResolution};
-use game_background::wallpaper_plugin::WallpaperPlugin;
+use game_background::WallpaperPlugin;
 use std::f32::consts::PI;
 
 /// A marker component for our shapes so we can query them separately from the ground plane
@@ -34,6 +34,7 @@ fn main() {
                         present_mode: PresentMode::AutoVsync,
                         name: Some("wallpaper".into()),
                         window_level: WindowLevel::AlwaysOnBottom,
+                        // mode: WindowMode::BorderlessFullscreen(MonitorSelection::Index(0)),
                         mode: WindowMode::Windowed,
                         skip_taskbar: false,
                         titlebar_shown: false,
@@ -41,7 +42,7 @@ fn main() {
                         // // fullsize_content_view: true,
                         resolution: WindowResolution::new(1920., 1080.),
                         // resolution: WindowResolution::new(5520., 1080.),
-                        position: WindowPosition::At((1680, 0).into()),
+                        // position: WindowPosition::At((1680, 0).into()),
                         // position: WindowPosition::At((-1680, 0).into()),
                         // position: WindowPosition::At((0, 0).into()),
                         ..Default::default()
