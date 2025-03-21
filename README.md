@@ -53,3 +53,9 @@ App::new()
         wp_plug, 
     ))
 ```
+
+## Versioning
+
+| Bevy Version | bevy_wallpaper |
+|-|-|
+| `0.15` | `0.1` |
