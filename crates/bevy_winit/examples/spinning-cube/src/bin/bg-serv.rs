@@ -43,8 +43,10 @@ fn main() {
                         resolution: WindowResolution::new(1920., 1080.),
                         // resolution: WindowResolution::new(5520., 1080.),
                         // position: WindowPosition::At((1680, 0).into()),
+                        // position: WindowPosition::Automatic,
                         // position: WindowPosition::At((-1680, 0).into()),
                         // position: WindowPosition::At((0, 0).into()),
+                        // position: WindowPosition::Centered(MonitorSelection::Primary),
                         ..Default::default()
                     }),
                     ..Default::default()
@@ -75,46 +77,42 @@ fn main() {
             .into(),
         })
         .add_systems(Startup, (camera_setup, spawn_cube))
-        .add_systems(Update, (rotate, log_window_resize, window_creation_log))
+        .add_systems(
+            Update,
+            (
+                rotate,
+                log_window_resize,
+                window_creation_log,
+                log_window_move,
+            ),
+        )
         .run();
 }
 
-fn camera_setup(
-    mut commands: Commands,
-    // wins: Query<(
-    //     Entity,
-    //     &'static mut Window,
-    //     Option<&'static RawHandleWrapperHolder>,
-    // )>,
-) {
-    // commands.insert_resource(ClearColor(
-    //     Srgba {
-    //         red: (30. / 255.),
-    //         green: (30. / 255.),
-    //         blue: (46. / 255.),
-    //         alpha: 1.0,
-    //     }
-    //     .into(),
-    // ));
+fn camera_setup(mut commands: Commands) {
     commands.insert_resource(ClearColor(
         Srgba {
-            red: 0.,
-            green: 0.,
-            blue: 0.,
+            red: (30. / 255.),
+            green: (30. / 255.),
+            blue: (46. / 255.),
             alpha: 1.0,
         }
         .into(),
     ));
+    // commands.insert_resource(ClearColor(
+    //     Srgba {
+    //         red: 0.,
+    //         green: 0.,
+    //         blue: 0.,
+    //         alpha: 1.0,
+    //     }
+    //     .into(),
+    // ));
 
     commands.spawn((
         Camera3d::default(),
         Transform::from_xyz(0.0, 0.0, 8.0).looking_at(Vec3::new(0.0, 0.0, 0.0), Vec3::Y),
-        Camera {
-            // target: RenderTarget::Window(bevy::window::WindowRef::Entity(
-            //     wins.iter().next().unwrap().0,
-            // )),
-            ..default()
-        },
+        Camera::default(),
         // VisualizationCamera,
         // ClearColorConfig: (Color::BLACK),
     ));
@@ -157,7 +155,16 @@ fn rotate(mut query: Query<&mut Transform, With<Shape>>, time: Res<Time>) {
 fn log_window_resize(mut resize_reader: EventReader<WindowResized>) {
     for e in resize_reader.read() {
         // When resolution is being changed
-        info!("{:.1} x {:.1}", e.width, e.height);
+        info!("size {:.1} x {:.1}", e.width, e.height);
+        // info!("location {} x {}", e., e.height);
+    }
+}
+
+fn log_window_move(mut resize_reader: EventReader<WindowMoved>) {
+    for e in resize_reader.read() {
+        // When resolution is being changed
+        info!("location {} x {}", e.position[0], e.position[1]);
+        // info!("location {} x {}", e., e.height);
     }
 }
 
@@ -166,7 +173,3 @@ fn window_creation_log(mut created_evs: EventReader<WindowCreated>) {
         info!("window created{e:?}");
     }
 }
-
-// fn window_log(winits: Query<&Window, With<PrimaryWindow>>) {
-//     // info!("{winits:?}");
-// }
