@@ -5,4 +5,4 @@ edition = "2024"
 
 [dependencies]
 bevy = "0.15.3"
-game-background = { version = "0.1.0", path = "../.." }
+bevy_wallpaper = { version = "0.1.0", path = "../.." }

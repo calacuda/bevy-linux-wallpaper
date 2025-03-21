@@ -17,7 +17,7 @@ use winit::{
     error::ExternalError,
     event_loop::ActiveEventLoop,
     monitor::MonitorHandle,
-    raw_window_handle::{DisplayHandle, RawWindowHandle, XcbWindowHandle},
+    raw_window_handle::{RawWindowHandle, XcbWindowHandle},
     window::{CursorGrabMode as WinitCursorGrabMode, Fullscreen, Window as WinitWindow, WindowId},
 };
 use winit::{

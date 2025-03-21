@@ -11,7 +11,7 @@ use bevy::{
     winit::{WakeUp, WinitPlugin},
 };
 // use bevy_window::{PresentMode, WindowLevel, WindowMode, WindowResized, WindowResolution};
-use game_background::WallpaperPlugin;
+use bevy_wallpaper::WallpaperPlugin;
 use std::f32::consts::PI;
 
 /// A marker component for our shapes so we can query them separately from the ground plane

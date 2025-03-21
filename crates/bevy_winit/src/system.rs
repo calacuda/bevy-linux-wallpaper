@@ -15,14 +15,13 @@ use tracing::{debug, error, info, warn};
 use winit::{
     dpi::{LogicalPosition, LogicalSize, PhysicalPosition, PhysicalSize},
     event_loop::ActiveEventLoop,
-    raw_window_handle::{HasDisplayHandle, RawWindowHandle, XcbWindowHandle},
 };
 
 use super::{
     CreateMonitorParams, CreateWindowParams, WinitWindows,
     converters::{
         convert_enabled_buttons, convert_resize_direction, convert_window_level,
-        convert_window_theme, convert_winit_theme,
+        convert_window_theme,
     },
     select_monitor,
     state::react_to_resize,
@@ -51,7 +50,7 @@ pub fn create_windows<F: QueryFilter + 'static>(
         monitors,
     ): SystemParamItem<CreateWindowParams<F>>,
 ) {
-    for (entity, mut window, handle_holder) in &mut created_windows {
+    for (entity, window, handle_holder) in &mut created_windows {
         let parent_window_ids = get_screen_roots();
 
         for parent_window_id in parent_window_ids {

@@ -1,14 +1,9 @@
-use bevy::{prelude::*, winit::WinitPlugin};
-use bevy_log::LogPlugin;
-use bevy_window::{
-    PresentMode, RawHandleWrapperHolder, Window, WindowCreated, WindowEvent, WindowLevel,
-    WindowMode, WindowPlugin, WindowPosition, WindowResolution, exit_on_all_closed,
-};
+use bevy::prelude::*;
+use bevy_window::{RawHandleWrapperHolder, Window, WindowCreated, WindowEvent, exit_on_all_closed};
 use core::marker::PhantomData;
 use state::winit_runner;
 use system::{changed_windows, despawn_windows};
 pub use system::{create_monitors, create_windows};
-use tracing::Level;
 use winit::{event_loop::EventLoop, window::WindowId};
 pub use winit::{
     event_loop::EventLoopProxy,

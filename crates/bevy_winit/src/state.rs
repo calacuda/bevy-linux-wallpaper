@@ -9,7 +9,7 @@ use bevy_ecs::{
     system::SystemState,
     // world::FromWorld,
 };
-use bevy_log::{error, info, trace, warn};
+use bevy_log::{error, info, warn};
 use bevy_math::{DVec2, ivec2};
 #[cfg(not(target_arch = "wasm32"))]
 use bevy_tasks::tick_global_task_pools_on_main_thread;
@@ -137,6 +137,7 @@ impl<T: Event> WinitAppRunnerState<T> {
     }
 }
 
+#[allow(dead_code)]
 /// A source for a cursor. Consumed by the winit event loop.
 #[derive(Debug)]
 pub enum CursorSource {
@@ -447,22 +448,6 @@ impl<T: Event> ApplicationHandler<T> for WinitAppRunnerState<T> {
         //       The monitor sync logic likely belongs in monitor event handlers and not here.
         #[cfg(not(target_os = "windows"))]
         self.redraw_requested(event_loop);
-
-        // Have the startup behavior run in about_to_wait, which prevents issues with
-        // invisible window creation. https://github.com/bevyengine/bevy/issues/18027
-        #[cfg(target_os = "windows")]
-        {
-            let winit_windows = self.world().non_send_resource::<WinitWindows>();
-            let headless = winit_windows.windows.is_empty();
-            let exiting = self.app_exit.is_some();
-            let all_invisible = winit_windows
-                .windows
-                .iter()
-                .all(|(_, w)| !w.is_visible().unwrap_or(false));
-            if !exiting && (self.startup_forced_updates > 0 || headless || all_invisible) {
-                self.redraw_requested(event_loop);
-            }
-        }
     }
 
     fn suspended(&mut self, _event_loop: &ActiveEventLoop) {
@@ -571,7 +556,7 @@ impl<T: Event> WinitAppRunnerState<T> {
                         target_arch = "wasm32",
                         target_os = "android",
                         target_os = "ios",
-                        all(target_os = "linux", any(feature = "x11", feature = "wayland"))
+                        all(target_os = "linux", feature = "x11")
                     )))]
                     {
                         let winit_windows = self.world().non_send_resource::<WinitWindows>();
@@ -758,13 +743,11 @@ impl<T: Event> WinitAppRunnerState<T> {
         }
     }
 
-    fn update_cursors(&mut self, #[cfg(feature = "custom_cursor")] event_loop: &ActiveEventLoop) {
-        #[cfg(not(feature = "custom_cursor"))]
+    fn update_cursors(&mut self) {
         let mut windows_state: SystemState<(
             NonSendMut<WinitWindows>,
             Query<(Entity, &mut PendingCursor), Changed<PendingCursor>>,
         )> = SystemState::new(self.world_mut());
-        #[cfg(not(feature = "custom_cursor"))]
         let (winit_windows, mut windows) = windows_state.get_mut(self.world_mut());
 
         for (entity, mut pending_cursor) in windows.iter_mut() {
