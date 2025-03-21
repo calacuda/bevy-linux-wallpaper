@@ -1,5 +1,5 @@
 [package]
-name = "game-background"
+name = "bevy_wallpaper_mpv"
 version = "0.1.0"
 edition = "2024"
 

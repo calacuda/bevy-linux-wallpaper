@@ -16,7 +16,7 @@ see each crates readme for more info.
 
 ```toml
 [dependencies]
-bevy_wallpaper = { git="https://github.com/calacuda/bevy-linux-wallpaper", branch="main" }
+bevy_wallpaper = { git="https://github.com/calacuda/bevy-linux-wallpaper", version="0.1" }
 ```
 
 ## Usage 
