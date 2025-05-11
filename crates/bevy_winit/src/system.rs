@@ -51,71 +51,69 @@ pub fn create_windows<F: QueryFilter + 'static>(
     ): SystemParamItem<CreateWindowParams<F>>,
 ) {
     for (entity, window, handle_holder) in &mut created_windows {
-        let parent_window_ids = get_screen_roots();
+        let parent_window_id = get_screen_roots();
 
-        for parent_window_id in parent_window_ids {
-            if winit_windows.get_window(entity).is_some() {
-                continue;
-            } else {
-                warn!("attempting to parent to windows {:?}", parent_window_id);
-            }
-
-            info!("Creating new window {} ({})", window.title.as_str(), entity);
-
-            let winit_window = winit_windows.create_window(
-                event_loop,
-                entity,
-                &window,
-                // &mut adapters,
-                // &mut handlers,
-                // &accessibility_requested,
-                &monitors,
-                parent_window_id,
-            );
-
-            // if let Some(theme) = winit_window.theme() {
-            //     window.window_theme = Some(convert_winit_theme(theme));
-            // }
-
-            // window
-            //     .resolution
-            //     .set_scale_factor_and_apply_to_physical_size(winit_window.scale_factor() as f32);
-            // let winit_window = WindowWrapper::new(RawWindowHandle::Xcb(XcbWindowHandle::new(
-            //     NonZeroU32::new(parent_window_id).unwrap(),
-            // )));
-            // let handle_wrapper = WindowWrapper::new(RawWindowHandle::Xcb(XcbWindowHandle::new(
-            //     NonZeroU32::new(parent_window_id).unwrap(),
-            // )));
-            // let winit_window = RawWindowHandle::Xcb(XcbWindowHandle::new(
-            //     NonZeroU32::new(parent_window_id).unwrap(),
-            // ));
-            // let winit_window = WindowWrapper::new(WindowFromX11 {
-            //     rwh: winit_window,
-            //     ev_loop: event_loop.display_handle().unwrap(),
-            // });
-
-            commands.entity(entity).insert((
-                CachedWindow {
-                    window: window.clone(),
-                },
-                // WinitWindowPressedKeys::default(),
-            ));
-            debug!("wid: {:?}", winit_window.id());
-            // error!("window: {:?}", window);
-
-            // if let Ok(handle_wrapper) = RawHandleWrapper::new(winit_window) {
-            if let Ok(handle_wrapper) = RawHandleWrapper::new(&winit_window) {
-                commands.entity(entity).insert(handle_wrapper.clone());
-                debug!("handle_wrapper => {:?}", handle_wrapper);
-
-                if let Some(handle_holder) = handle_holder {
-                    debug!("handle_holder => {:?}", handle_holder);
-                    *handle_holder.0.lock().unwrap() = Some(handle_wrapper);
-                }
-            }
-
-            window_created_events.send(WindowCreated { window: entity });
+        if winit_windows.get_window(entity).is_some() {
+            continue;
+        } else {
+            warn!("attempting to parent to windows {:?}", parent_window_id);
         }
+
+        info!("Creating new window {} ({})", window.title.as_str(), entity);
+
+        let winit_window = winit_windows.create_window(
+            event_loop,
+            entity,
+            &window,
+            // &mut adapters,
+            // &mut handlers,
+            // &accessibility_requested,
+            &monitors,
+            parent_window_id,
+        );
+
+        // if let Some(theme) = winit_window.theme() {
+        //     window.window_theme = Some(convert_winit_theme(theme));
+        // }
+
+        // window
+        //     .resolution
+        //     .set_scale_factor_and_apply_to_physical_size(winit_window.scale_factor() as f32);
+        // let winit_window = WindowWrapper::new(RawWindowHandle::Xcb(XcbWindowHandle::new(
+        //     NonZeroU32::new(parent_window_id).unwrap(),
+        // )));
+        // let handle_wrapper = WindowWrapper::new(RawWindowHandle::Xcb(XcbWindowHandle::new(
+        //     NonZeroU32::new(parent_window_id).unwrap(),
+        // )));
+        // let winit_window = RawWindowHandle::Xcb(XcbWindowHandle::new(
+        //     NonZeroU32::new(parent_window_id).unwrap(),
+        // ));
+        // let winit_window = WindowWrapper::new(WindowFromX11 {
+        //     rwh: winit_window,
+        //     ev_loop: event_loop.display_handle().unwrap(),
+        // });
+
+        commands.entity(entity).insert((
+            CachedWindow {
+                window: window.clone(),
+            },
+            // WinitWindowPressedKeys::default(),
+        ));
+        debug!("wid: {:?}", winit_window.id());
+        // error!("window: {:?}", window);
+
+        // if let Ok(handle_wrapper) = RawHandleWrapper::new(winit_window) {
+        if let Ok(handle_wrapper) = RawHandleWrapper::new(&winit_window) {
+            commands.entity(entity).insert(handle_wrapper.clone());
+            debug!("handle_wrapper => {:?}", handle_wrapper);
+
+            if let Some(handle_holder) = handle_holder {
+                debug!("handle_holder => {:?}", handle_holder);
+                *handle_holder.0.lock().unwrap() = Some(handle_wrapper);
+            }
+        }
+
+        window_created_events.send(WindowCreated { window: entity });
     }
 }
 

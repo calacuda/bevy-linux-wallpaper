@@ -16,7 +16,7 @@ use winit::{
     dpi::{LogicalSize, PhysicalPosition},
     error::ExternalError,
     event_loop::ActiveEventLoop,
-    monitor::MonitorHandle,
+    monitor::{MonitorHandle, VideoModeHandle},
     raw_window_handle::{RawWindowHandle, XcbWindowHandle},
     window::{CursorGrabMode as WinitCursorGrabMode, Fullscreen, Window as WinitWindow, WindowId},
 };
@@ -83,6 +83,24 @@ impl WinitWindows {
             }
         };
 
+        warn!("monitor section: {maybe_selected_monitor:?}");
+
+        winit_window_attributes = winit_window_attributes
+            .with_embed_parent_window(parent_window_id)
+            .with_override_redirect(true)
+            // .with_fullscreen(Some(Fullscreen::Borderless(None)))
+            .with_maximized(true)
+            .with_decorations(false)
+            .with_enabled_buttons(WindowButtons::empty())
+            // .with_x11_visual(0x1);
+            .with_x11_window_type(Vec::from([WindowType::Desktop]));
+
+        winit_window_attributes = unsafe {
+            winit_window_attributes.with_parent_window(Some(RawWindowHandle::Xcb(
+                XcbWindowHandle::new(NonZeroU32::new(parent_window_id).unwrap()),
+            )))
+        };
+
         match window.mode {
             WindowMode::BorderlessFullscreen(_) => {
                 winit_window_attributes = winit_window_attributes
@@ -105,6 +123,35 @@ impl WinitWindows {
             //         winit_window_attributes
             //     }
             // }
+            WindowMode::Fullscreen(monitor_selection) => {
+                let select_monitor = &maybe_selected_monitor
+                    .clone()
+                    .expect("Unable to get monitor.");
+
+                if let Some(video_mode) = get_current_videomode(select_monitor) {
+                    winit_window_attributes = winit_window_attributes
+                        .with_fullscreen(Some(Fullscreen::Exclusive(video_mode)))
+                } else {
+                    warn!(
+                        "Could not find valid fullscreen video mode for {:?}",
+                        monitor_selection
+                    );
+                    // winit_window_attributes
+                }
+
+                // if let Some(video_mode) =
+                // get_selected_videomode(select_monitor, &video_mode_selection)
+                // {
+                // winit_window_attributes.with_fullscreen(Some(Fullscreen::Exclusive(video_mode)))
+                // } else {
+                //     warn!(
+                //         "Could not find valid fullscreen video mode for {:?} {:?}",
+                //         monitor_selection, video_mode_selection
+                //     );
+                //     winit_window_attributes
+                // }
+            }
+
             WindowMode::Windowed => {
                 if let Some(position) = winit_window_position(
                     &window.position,
@@ -113,6 +160,7 @@ impl WinitWindows {
                     event_loop.primary_monitor(),
                     None,
                 ) {
+                    info!("setting window position {:?}", window.position);
                     winit_window_attributes = winit_window_attributes.with_position(position);
                 }
                 let logical_size = LogicalSize::new(window.width(), window.height());
@@ -199,21 +247,6 @@ impl WinitWindows {
         // println!("attempting to parent to window {:?}", parent_window_ids);
         //
         // for parent_window_id in parent_window_ids {
-        winit_window_attributes = winit_window_attributes
-            .with_embed_parent_window(parent_window_id)
-            .with_override_redirect(true)
-            .with_fullscreen(Some(Fullscreen::Borderless(None)))
-            .with_maximized(true)
-            .with_decorations(false)
-            .with_enabled_buttons(WindowButtons::empty())
-            // .with_x11_visual(0x1);
-            .with_x11_window_type(Vec::from([WindowType::Notification]));
-
-        winit_window_attributes = unsafe {
-            winit_window_attributes.with_parent_window(Some(RawWindowHandle::Xcb(
-                XcbWindowHandle::new(NonZeroU32::new(parent_window_id).unwrap()),
-            )))
-        };
 
         let constraints = window.resize_constraints.check_constraints();
         let min_inner_size = LogicalSize {
@@ -272,8 +305,8 @@ impl WinitWindows {
         //     }
         // }
 
-        let pwi: WindowId = (parent_window_id as u64).into();
-        info!("pwi => {pwi:?}");
+        // let pwi: WindowId = (parent_window_id as u64).into();
+        // info!("pwi => {pwi:?}");
         // let window = RawWindowHandle::Xcb(XcbWindowHandle::new(NonZeroU32::new(parent_window_id).unwrap()));
 
         self.entity_to_winit.insert(entity, winit_window.id());
@@ -336,15 +369,15 @@ impl WinitWindows {
 // ///
 // /// TODO: When Winit 0.31 releases this function can be removed and replaced with
 // /// `MonitorHandle::current_video_mode()`
-// fn get_current_videomode(monitor: &MonitorHandle) -> Option<VideoModeHandle> {
-//     monitor
-//         .video_modes()
-//         .filter(|mode| {
-//             mode.size() == monitor.size()
-//                 && Some(mode.refresh_rate_millihertz()) == monitor.refresh_rate_millihertz()
-//         })
-//         .max_by_key(VideoModeHandle::bit_depth)
-// }
+fn get_current_videomode(monitor: &MonitorHandle) -> Option<VideoModeHandle> {
+    monitor
+        .video_modes()
+        .filter(|mode| {
+            mode.size() == monitor.size()
+                && Some(mode.refresh_rate_millihertz()) == monitor.refresh_rate_millihertz()
+        })
+        .max_by_key(VideoModeHandle::bit_depth)
+}
 
 pub(crate) fn attempt_grab(
     winit_window: &WinitWindow,

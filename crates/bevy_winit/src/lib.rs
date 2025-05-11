@@ -21,7 +21,7 @@ mod winit_config;
 mod winit_monitors;
 mod winit_windows;
 
-pub fn get_screen_roots() -> Vec<u32> {
+pub fn get_screen_roots() -> u32 {
     let (conn, screen_num) = x11rb::connect(None).unwrap();
     // println!(
     //     "root window id (i think) {:?}",
@@ -29,7 +29,7 @@ pub fn get_screen_roots() -> Vec<u32> {
     // );
     // println!("screen_num {screen_num}");
 
-    vec![conn.setup().roots[screen_num].root]
+    conn.setup().roots[screen_num].root
 }
 
 #[derive(Default)]
